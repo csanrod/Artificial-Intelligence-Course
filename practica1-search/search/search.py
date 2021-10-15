@@ -114,91 +114,30 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
 
-    # python3 pacman.py -l tinyMaze -p SearchAgent
-    # print(type(problem))
-    # print("Start:", problem.getStartState())
-    # print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    # print("Problem actions for initial state", problem.getActions(problem.getStartState()))
-
-    # for action in problem.getActions(problem.getStartState()):
-    #     print("If you go ", action)
-    #     print("\tNew state --> ", problem.getNextState(problem.getStartState(), action))
-
-    # print(problem.expand(problem.getStartState()))
-
-    # for i in problem.expand(problem.getStartState()):
-    #     print(problem.getActions(i[0]))
-    
-    from game import Directions
-
-    s = Directions.SOUTH
-    w = Directions.WEST
-    n = Directions.NORTH
-    e = Directions.EAST
-
-    def convert_dir(dir):
-        if dir == "North":
-            return n
-        elif dir == "South":
-            return s
-        elif dir == "East":
-            return e
-        elif dir == "West":
-            return w
-
-    def rev_dir(dir):
-        if dir == "North":
-            return "South"
-        elif dir == "South":
-            return "North"
-        elif dir == "East":
-            return "West"
-        elif dir == "West":
-            return "East"
-
-    
     frontier = util.Stack()
-    frontier.push((problem.getStartState(),None,None,0))
+    frontier.push((problem.getStartState(),0,[]))
     expanded = []
-    all_info = []
 
-    while frontier is not frontier.isEmpty():
-        current_node = frontier.pop()
-        print("CURRENT_NODE:", current_node)
+    while frontier is not frontier.isEmpty():   
+        current_node = frontier.pop()  
+
         if problem.isGoalState(current_node[0]):
-            # print("Solution -->", current_node)
-            all_info.append(current_node) 
-            expanded.append(current_node[0])
-            
-            print("\n------------")
-            print("All_info -->", all_info)
-            print("Expanded -->", expanded)
-            print("\n------------")
+            return current_node[2]
 
-            path = []
-            idx = -1
-            state = all_info[idx][0]
-
-            while state != problem.getStartState():              
-                path_action = all_info[idx][1]
-                action = all_info[idx][2]
-                path.append(path_action)
-                state = problem.getNextState(state, action)
-                idx = expanded.index(state)
-
-            path.reverse()
-            return path
-
-
-        if current_node not in expanded:
+        if current_node[0] not in expanded:
             expanded.append(current_node[0])   
-            all_info.append(current_node)         
+            
             for child in problem.expand(current_node[0]):
-                if child[0] not in expanded:
-                    #print("\tExpands", child)
-                    frontier.push((child[0],child[1],rev_dir(child[1]),child[2]))
+                current_path = []
 
-    return None
+                for item in current_node[2]:
+                    current_path.append(item)  
+
+                current_path.append(child[1])           
+                new_frontier = (child[0],child[2],current_path)
+                frontier.push(new_frontier)
+
+    return -1
     util.raiseNotDefined()
 
 def breadthFirstSearch(problem):
