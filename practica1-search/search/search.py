@@ -128,13 +128,14 @@ def depthFirstSearch(problem):
             expanded.append(current_node[0])   
             
             for child in problem.expand(current_node[0]):
+                cost = current_node[1] + child[2]
                 current_path = []
 
                 for item in current_node[2]:
                     current_path.append(item)  
 
                 current_path.append(child[1])           
-                new_frontier = (child[0],child[2],current_path)
+                new_frontier = (child[0],cost,current_path)
                 frontier.push(new_frontier)
 
     return -1
@@ -156,13 +157,14 @@ def breadthFirstSearch(problem):
             expanded.append(current_node[0])   
             
             for child in problem.expand(current_node[0]):
+                cost = current_node[1] + child[2]
                 current_path = []
 
                 for item in current_node[2]:
                     current_path.append(item)  
 
                 current_path.append(child[1])           
-                new_frontier = (child[0],child[2],current_path)
+                new_frontier = (child[0],cost,current_path)
                 frontier.push(new_frontier)
 
     return -1
@@ -177,7 +179,32 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    frontier = util.PriorityQueue()
+    frontier.push((problem.getStartState(),0,[]), heuristic(problem.getStartState(), problem))
+    expanded = []
+
+    while frontier is not frontier.isEmpty():   
+        current_node = frontier.pop()
+
+        if problem.isGoalState(current_node[0]):
+            return current_node[2]
+
+        if current_node[0] not in expanded:
+            expanded.append(current_node[0])   
+            
+            for child in problem.expand(current_node[0]):
+                cost = current_node[1] + child[2]
+                current_path = []
+
+                for item in current_node[2]:
+                    current_path.append(item)  
+
+                current_path.append(child[1])           
+                new_frontier = (child[0],cost,current_path)
+
+                frontier.push(new_frontier, heuristic(child[0], problem) + cost)
+
+    return -1
 
 
 # Abbreviations
