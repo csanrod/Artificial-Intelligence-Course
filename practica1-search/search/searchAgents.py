@@ -310,19 +310,10 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
 
     def getStartState(self):
-        """
-        Returns the start state (in your state space, not the full Pacman state
-        space)
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return (self.startingPosition, list(self.corners))
 
     def isGoalState(self, state):
-        """
-        Returns whether this search state is a goal state of the problem.
-        """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return len(state[1]) == 0
 
     def expand(self, state):
         """
@@ -340,6 +331,10 @@ class CornersProblem(search.SearchProblem):
             # Add a child state to the child list if the action is legal
             # You should call getActions, getActionCost, and getNextState.
             "*** YOUR CODE HERE ***"
+            nextState = self.getNextState(state, action)
+            cost = self.getActionCost(state, action, nextState)
+            # print("State:", state,"\tNextState:", nextState)
+            children.append((nextState, action, cost))
 
         self._expanded += 1 # DO NOT CHANGE
         return children
@@ -367,9 +362,14 @@ class CornersProblem(search.SearchProblem):
         dx, dy = Actions.directionToVector(action)
         nextx, nexty = int(x + dx), int(y + dy)
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        # you will need to replace the None part of the following tuple.
-        return ((nextx, nexty), None)
+
+        corners_update = [] 
+        for corner in state[1]:
+            corners_update.append(corner)
+        if (nextx, nexty) in state[1]:
+            corners_update.remove((nextx, nexty))
+
+        return ((nextx, nexty), corners_update)
 
     def getCostOfActionSequence(self, actions):
         """

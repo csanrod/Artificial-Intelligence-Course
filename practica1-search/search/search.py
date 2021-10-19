@@ -141,15 +141,13 @@ def depthFirstSearch(problem):
     return -1
 
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
     frontier = util.Queue()
     frontier.push((problem.getStartState(),0,[]))
     expanded = []
 
     while frontier is not frontier.isEmpty():   
         current_node = frontier.pop()  
-
+        
         if problem.isGoalState(current_node[0]):
             return current_node[2]
 
