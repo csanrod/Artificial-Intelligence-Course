@@ -405,12 +405,16 @@ def cornersHeuristic(state, problem):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
     current_pos = state[0]
+    remaining_corners = state[1]
     dist_to_corner = []
     
-    for corner in state[1]:
+    for corner in remaining_corners:
         dist_to_corner.append(manh(current_pos, corner))
 
-    sorted(dist_to_corner)
+    # print("\n",dist_to_corner)
+    # dist_to_corner.sort()
+    # print(dist_to_corner,"\n")
+
     if dist_to_corner:
         return dist_to_corner[0]
     return 0
@@ -573,7 +577,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.aStarSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -609,7 +613,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.food[x][y]
 
 def mazeDistance(point1, point2, gameState):
     """
