@@ -333,7 +333,6 @@ class CornersProblem(search.SearchProblem):
             "*** YOUR CODE HERE ***"
             nextState = self.getNextState(state, action)
             cost = self.getActionCost(state, action, nextState)
-            # print("State:", state,"\tNextState:", nextState)
             children.append((nextState, action, cost))
 
         self._expanded += 1 # DO NOT CHANGE
@@ -362,7 +361,8 @@ class CornersProblem(search.SearchProblem):
         dx, dy = Actions.directionToVector(action)
         nextx, nexty = int(x + dx), int(y + dy)
         "*** YOUR CODE HERE ***"
-
+        
+        # Returns only corners not reached
         corners_update = [] 
         for corner in state[1]:
             corners_update.append(corner)
@@ -401,6 +401,7 @@ def cornersHeuristic(state, problem):
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
     
+    # Manhattan distance
     def manh(pos1, pos2):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
@@ -408,13 +409,11 @@ def cornersHeuristic(state, problem):
     remaining_corners = state[1]
     dist_to_corner = []
     
+    # Get current distance to corners
     for corner in remaining_corners:
         dist_to_corner.append(manh(current_pos, corner))
 
-    # print("\n",dist_to_corner)
-    # dist_to_corner.sort()
-    # print(dist_to_corner,"\n")
-
+    # dist_to_corner.sort() # Increase node expansion
     if dist_to_corner:
         return dist_to_corner[0]
     return 0
@@ -534,6 +533,7 @@ def foodHeuristic(state, problem):
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
 
+    # Manhattan distance
     def manh(pos1, pos2):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
@@ -543,7 +543,7 @@ def foodHeuristic(state, problem):
     for goal in foodList:
         dist_to_goal.append(manh(position, goal))
 
-    sorted(dist_to_goal)
+    # dist_to_goal.sort() # Increase node expansion
     if dist_to_goal:
         return dist_to_goal[0]
     return 0
@@ -577,7 +577,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        return search.aStarSearch(problem)
+        return search.aStarSearch(problem) # Greedy search is A* only with heuristic
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """

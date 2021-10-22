@@ -100,22 +100,8 @@ def tinyMazeSearch(problem):
     return  [s, s, w, s, w, w, s, w]
 
 def depthFirstSearch(problem):
-    """
-    Search the deepest nodes in the search tree first.
-
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print("Start:", problem.getStartState())
-    print("Is the start a goal?", problem.isGoalState(problem.getStartState()))
-    """
-    "*** YOUR CODE HERE ***"
-
-    frontier = util.Stack()
-    frontier.push((problem.getStartState(),0,[]))
+    frontier = util.Stack()                       # LIFO
+    frontier.push((problem.getStartState(),0,[])) # ((x,y), acc_cost, path_to_xy)
     expanded = []
 
     while frontier is not frontier.isEmpty():   
@@ -128,21 +114,24 @@ def depthFirstSearch(problem):
             expanded.append(current_node[0])   
             
             for child in problem.expand(current_node[0]):
-                cost = current_node[1] + child[2]
+                cost = current_node[1] + child[2]   # acc_cost
                 current_path = []
 
+                # Init current path
                 for item in current_node[2]:
                     current_path.append(item)  
 
+                # Add expanded child action to current path and all data to frontier
                 current_path.append(child[1])           
                 new_frontier = (child[0],cost,current_path)
                 frontier.push(new_frontier)
 
     return -1
 
+
 def breadthFirstSearch(problem):
-    frontier = util.Queue()
-    frontier.push((problem.getStartState(),0,[]))
+    frontier = util.Queue()                         # FIFO
+    frontier.push((problem.getStartState(),0,[]))   # ((x,y), acc_cost, path_to_xy)
     expanded = []
 
     while frontier is not frontier.isEmpty():   
@@ -155,17 +144,20 @@ def breadthFirstSearch(problem):
             expanded.append(current_node[0])   
             
             for child in problem.expand(current_node[0]):
-                cost = current_node[1] + child[2]
+                cost = current_node[1] + child[2]   # acc_cost
                 current_path = []
 
+                # Init current path
                 for item in current_node[2]:
                     current_path.append(item)  
-
+                
+                # Add expanded child action to current path and all data to frontier
                 current_path.append(child[1])           
                 new_frontier = (child[0],cost,current_path)
                 frontier.push(new_frontier)
 
     return -1
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -174,11 +166,12 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    frontier = util.PriorityQueue()
-    frontier.push((problem.getStartState(),0,[]), heuristic(problem.getStartState(), problem))
+    frontier = util.PriorityQueue() # FIFO with priority (heuristic)
+
+    # Initial prioriy = heuristic(init) --> ((x,y), acc_cost, path_to_xy)
+    frontier.push((problem.getStartState(),0,[]), heuristic(problem.getStartState(), problem)) 
     expanded = []
 
     while frontier is not frontier.isEmpty():   
@@ -191,15 +184,18 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             expanded.append(current_node[0])   
             
             for child in problem.expand(current_node[0]):
-                cost = current_node[1] + child[2]
+                cost = current_node[1] + child[2]   # acc_cost
                 current_path = []
 
+                # Init current path
                 for item in current_node[2]:
                     current_path.append(item)  
 
+                # Add expanded child action to current path and all data to frontier
                 current_path.append(child[1])           
                 new_frontier = (child[0],cost,current_path)
 
+                # priority = heuristic(current_xy) + acc_cost
                 frontier.push(new_frontier, heuristic(child[0], problem) + cost)
 
     return -1
