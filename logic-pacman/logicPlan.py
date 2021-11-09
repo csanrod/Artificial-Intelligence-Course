@@ -74,7 +74,16 @@ def sentence1():
     (not A) or (not B) or C
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    A = logic.Expr('A')
+    B = logic.Expr('B')
+    C = logic.Expr('C')
+
+    s1 = A | B
+    s2 = ~ A % (~ B | C)
+    s3 = logic.disjoin(~ A, ~ B, C)
+
+    return logic.conjoin(s1, s2, s3)
+
 
 def sentence2():
     """Returns a logic.Expr instance that encodes that the following expressions are all true.
@@ -85,7 +94,17 @@ def sentence2():
     (not D) implies C
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    A = logic.Expr('A')
+    B = logic.Expr('B')
+    C = logic.Expr('C')
+    D = logic.Expr('D')
+
+    s1 = C % (B | D)
+    s2 = A >> (~ B & ~ D)
+    s3 = ~(B & ~ C) >> A
+    s4 = ~ D >> C
+
+    return logic.conjoin(s1, s2, s3, s4)
 
 def sentence3():
     """Using the symbols WumpusAlive[1], WumpusAlive[0], WumpusBorn[0], and WumpusKilled[0],
@@ -100,7 +119,16 @@ def sentence3():
     The Wumpus is born at time 0.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    WA1 = logic.PropSymbolExpr('WumpusAlive',1)
+    WA0 = logic.PropSymbolExpr('WumpusAlive',0)
+    WB0 = logic.PropSymbolExpr('WumpusBorn',0)
+    WK0 = logic.PropSymbolExpr('WumpusKilled',0)
+
+    s1 = WA1 % ((WA0 & ~ WK0) | (~ WA0 & WB0))
+    s2 = ~ (WA0 & WB0)
+    s3 = WB0
+
+    return logic.conjoin(s1, s2, s3)
 
 def modelToString(model):
     """Converts the model to a string for printing purposes. The keys of a model are 
@@ -122,7 +150,7 @@ def findModel(sentence):
     model if one exists. Otherwise, returns False.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    return logic.pycoSAT(logic.to_cnf(sentence))
 
 def atLeastOne(literals):
     """
