@@ -397,26 +397,25 @@ def cornersHeuristic(state, problem):
     This function should always return a number that is a lower bound on the
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
-    """
-    corners = problem.corners # These are the corner coordinates
-    walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
-    
+    """    
     # Manhattan distance
     def manh(pos1, pos2):
         return abs(pos1[0] - pos2[0]) + abs(pos1[1] - pos2[1])
 
     current_pos = state[0]
     remaining_corners = state[1]
-    dist_to_corner = []
-    
-    # Get current distance to corners
-    for corner in remaining_corners:
-        dist_to_corner.append(manh(current_pos, corner))
 
-    # dist_to_corner.sort() # Increase node expansion
-    if dist_to_corner:
-        return dist_to_corner[0]
-    return 0
+    max_d = 0
+    # Get max distance to corners
+    for corner in remaining_corners:
+        d = manh(current_pos, corner)
+        if d > max_d:
+            max_d = d
+
+    if current_pos in remaining_corners:
+        return 0
+    else:
+        return max_d
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -543,9 +542,9 @@ def foodHeuristic(state, problem):
     for goal in foodList:
         dist_to_goal.append(manh(position, goal))
 
-    # dist_to_goal.sort() # Increase node expansion
+    dist_to_goal.sort() # Increase node expansion
     if dist_to_goal:
-        return dist_to_goal[0]
+        return dist_to_goal[-1]
     return 0
 
 class ClosestDotSearchAgent(SearchAgent):
