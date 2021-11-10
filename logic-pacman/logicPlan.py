@@ -171,8 +171,9 @@ def atLeastOne(literals):
     >>> print logic.pl_true(atleast1,model2)
     True
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    "*** YOUR CODE HERE ***"            
+    return logic.associate('|',literals)
+
 
 
 def atMostOne(literals) :
@@ -182,7 +183,16 @@ def atMostOne(literals) :
     the expressions in the list is true.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    sentences = []
+    for sym1 in literals:
+        for sym2 in literals:
+            if sym1 != sym2:
+                s = (~sym1 | ~sym2)
+                s_inv = (~sym2 | ~sym1)
+                if s_inv not in sentences:
+                    sentences.append(s)
+            
+    return logic.associate('&',sentences)
 
 
 def exactlyOne(literals):
@@ -192,7 +202,8 @@ def exactlyOne(literals):
     the expressions in the list is true.
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+            
+    return (atLeastOne(literals) & atMostOne(literals))
 
 
 def extractActionSequence(model, actions):
