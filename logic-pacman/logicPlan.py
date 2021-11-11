@@ -184,15 +184,11 @@ def atMostOne(literals) :
     """
     "*** YOUR CODE HERE ***"
     sentences = []
-    for sym1 in literals:
-        for sym2 in literals:
-            if sym1 != sym2:
-                s = (~sym1 | ~sym2)
-                s_inv = (~sym2 | ~sym1)
-                if s_inv not in sentences:
-                    sentences.append(s)
-            
-    return logic.associate('&',sentences)
+    for i in range(0, len(literals) - 1):
+        for j in range(i + 1, len(literals)):
+            sentences.append((~ literals[i] | ~ literals[j]))
+ 
+    return logic.associate('&', sentences)
 
 
 def exactlyOne(literals):
@@ -201,8 +197,7 @@ def exactlyOne(literals):
     CNF (conjunctive normal form)that represents the logic that exactly one of 
     the expressions in the list is true.
     """
-    "*** YOUR CODE HERE ***"
-            
+    "*** YOUR CODE HERE ***"            
     return (atLeastOne(literals) & atMostOne(literals))
 
 
