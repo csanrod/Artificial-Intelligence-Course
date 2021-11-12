@@ -214,7 +214,28 @@ def extractActionSequence(model, actions):
     ['West', 'South', 'North']
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    def sortExprs(expr_list):
+        # List init of true expresions (actions)
+        sorted_exprs = [None] * len(expr_list)
+
+        # Sort
+        for expr in expr_list:
+            index = int(logic.parseExpr(expr)[1])
+            sorted_exprs[index] = logic.parseExpr(expr)[0]
+
+        return sorted_exprs
+
+    # Action keys extraction
+    plan = []
+    for key in model:
+        # Only true expr
+        if model[key]:
+            current_action = logic.parseExpr(key)[0]
+            # Only true actions expr
+            if current_action in actions:
+                plan.append(key)
+
+    return sortExprs(plan)
 
 def pacmanSuccessorStateAxioms(x, y, t, walls_grid):
     """
