@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -48,7 +48,7 @@ class PlanningProblem:
         Only used in problems that use ghosts (FoodGhostPlanningProblem)
         """
         util.raiseNotDefined()
-        
+
     def getGoalState(self):
         """
         Returns goal state for problem. Note only defined for problems that have
@@ -68,7 +68,7 @@ def tinyMazePlan(problem):
 
 def sentence1():
     """Returns a logic.Expr instance that encodes that the following expressions are all true.
-    
+
     A or B
     (not A) if and only if ((not B) or C)
     (not A) or (not B) or C
@@ -87,7 +87,7 @@ def sentence1():
 
 def sentence2():
     """Returns a logic.Expr instance that encodes that the following expressions are all true.
-    
+
     C if and only if (B or D)
     A implies ((not B) and (not D))
     (not (B and (not C))) implies A
@@ -131,15 +131,15 @@ def sentence3():
     return logic.conjoin(s1, s2, s3)
 
 def modelToString(model):
-    """Converts the model to a string for printing purposes. The keys of a model are 
+    """Converts the model to a string for printing purposes. The keys of a model are
     sorted before converting the model to a string.
-    
-    model: Either a boolean False or a dictionary of Expr symbols (keys) 
-    and a corresponding assignment of True or False (values). This model is the output of 
+
+    model: Either a boolean False or a dictionary of Expr symbols (keys)
+    and a corresponding assignment of True or False (values). This model is the output of
     a call to logic.pycoSAT.
     """
     if model == False:
-        return "False" 
+        return "False"
     else:
         # Dictionary
         modelList = sorted(model.items(), key=lambda item: str(item[0]))
@@ -154,8 +154,8 @@ def findModel(sentence):
 
 def atLeastOne(literals):
     """
-    Given a list of logic.Expr literals (i.e. in the form A or ~A), return a single 
-    logic.Expr instance in CNF (conjunctive normal form) that represents the logic 
+    Given a list of logic.Expr literals (i.e. in the form A or ~A), return a single
+    logic.Expr instance in CNF (conjunctive normal form) that represents the logic
     that at least one of the literals in the list is true.
     >>> A = logic.PropSymbolExpr('A');
     >>> B = logic.PropSymbolExpr('B');
@@ -171,15 +171,15 @@ def atLeastOne(literals):
     >>> print logic.pl_true(atleast1,model2)
     True
     """
-    "*** YOUR CODE HERE ***"            
+    "*** YOUR CODE HERE ***"
     return logic.associate('|',literals)
 
 
 
 def atMostOne(literals) :
     """
-    Given a list of logic.Expr literals, return a single logic.Expr instance in 
-    CNF (conjunctive normal form) that represents the logic that at most one of 
+    Given a list of logic.Expr literals, return a single logic.Expr instance in
+    CNF (conjunctive normal form) that represents the logic that at most one of
     the expressions in the list is true.
     """
     "*** YOUR CODE HERE ***"
@@ -187,17 +187,17 @@ def atMostOne(literals) :
     for i in range(0, len(literals) - 1):
         for j in range(i + 1, len(literals)):
             sentences.append((~ literals[i] | ~ literals[j]))
- 
+
     return logic.associate('&', sentences)
 
 
 def exactlyOne(literals):
     """
-    Given a list of logic.Expr literals, return a single logic.Expr instance in 
-    CNF (conjunctive normal form)that represents the logic that exactly one of 
+    Given a list of logic.Expr literals, return a single logic.Expr instance in
+    CNF (conjunctive normal form)that represents the logic that exactly one of
     the expressions in the list is true.
     """
-    "*** YOUR CODE HERE ***"            
+    "*** YOUR CODE HERE ***"
     return (atLeastOne(literals) & atMostOne(literals))
 
 
@@ -214,32 +214,26 @@ def extractActionSequence(model, actions):
     ['West', 'South', 'North']
     """
     "*** YOUR CODE HERE ***"
-    def sortExprs(expr_list):
-        # List init of true expresions (actions)
-        sorted_exprs = [None] * len(expr_list)
-
-        # Sort
-        for expr in expr_list:
-            index = int(logic.parseExpr(expr)[1])
-            sorted_exprs[index] = logic.parseExpr(expr)[0]
-
-        return sorted_exprs
-
     # Action keys extraction
     plan = []
-    for key in model:
+    priority_q = util.PriorityQueue()
+    for expr_key in model:
         # Only true expr
-        if model[key]:
-            current_action = logic.parseExpr(key)[0]
+        if model[expr_key]:
+            id = logic.parseExpr(expr_key)[0]
             # Only true actions expr
-            if current_action in actions:
-                plan.append(key)
+            if id in actions:
+                priority = int(logic.parseExpr(expr_key)[1])
+                priority_q.push(id, priority)
+                
+    while not priority_q.isEmpty():
+        plan.append(priority_q.pop())
 
-    return sortExprs(plan)
+    return plan
 
 def pacmanSuccessorStateAxioms(x, y, t, walls_grid):
     """
-    Successor state axiom for state (x,y,t) (from t-1), given the board (as a 
+    Successor state axiom for state (x,y,t) (from t-1), given the board (as a
     grid representing the wall locations).
     Current <==> (previous position at time t-1) & (took action to move to x, y)
     """
@@ -256,7 +250,7 @@ def pacmanSuccessorStateAxioms(x, y, t, walls_grid):
     if not walls_grid[x - 1][y]:    # West
         prev_Ps.append(logic.PropSymbolExpr(pacman_str, x - 1, y, t - 1) & logic.PropSymbolExpr('East', t - 1))
 
-    state_axiom = current_P % logic.disjoin(prev_Ps)    
+    state_axiom = current_P % logic.disjoin(prev_Ps)
     return state_axiom
 
 def positionLogicPlan(problem):
@@ -270,9 +264,116 @@ def positionLogicPlan(problem):
     walls_list = walls.asList()
     x0, y0 = problem.getStartState()
     xg, yg = problem.getGoalState()
-    
+
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # print(walls)
+    # print(width, height)
+    # print(walls_list)
+    # print((x0, y0))
+    # print((xg, yg))
+
+    # INIT
+    T_LIMIT = 50
+    t = 0
+    possible_actions = ['North', 'East', 'South', 'West']
+
+    # Extract initial pose sentence
+    poses = []
+    for x in range(1, width + 1):
+        for y in range(1, height  + 1):
+            if (x0, y0) == (x, y):
+                poses.append(logic.PropSymbolExpr(pacman_str, x, y, 0))
+            else:
+                poses.append(~logic.PropSymbolExpr(pacman_str, x, y, 0))
+
+    initial_pose = logic.associate('&', poses)
+
+    goal_pose = logic.PropSymbolExpr(pacman_str, 1, 2, 1) # (2,1)
+
+    # One action for t
+    actions = []
+    for action in possible_actions:
+        actions.append(logic.PropSymbolExpr(action, t))
+
+    print(actions)
+    one_action = exactlyOne(actions)
+
+    # Every successor for t
+    state_successors_list = []
+    for x in range(1, width + 1):
+        for y in range(1, height  + 1):
+            state_successors_list.append(pacmanSuccessorStateAxioms(x, y, t, walls))
+    state_successors = logic.associate('&',state_successors_list)
+
+    # One pose for t
+    all_pos = []
+    for x in range(1, width + 1):
+        for y in range(1, height  + 1):
+            all_pos.append(logic.PropSymbolExpr(pacman_str, x, y, t))
+    one_pose = exactlyOne(all_pos)
+
+    to_model = logic.conjoin(goal_pose, initial_pose, one_pose, one_action, state_successors)
+    mdl = findModel(to_model)
+    print(mdl)
+
+    if mdl:
+        action_seq = extractActionSequence(mdl, possible_actions)
+        print(action_seq)
+
+
+
+
+
+
+
+
+
+
+    # initial_pose = logic.PropSymbolExpr(pacman_str, x0, y0, 0)
+
+    # for t in range(T_LIMIT):
+    #     print(t)
+    #     goal_pose = logic.PropSymbolExpr(pacman_str, xg, yg, t)
+
+    #     all_pos = []
+    #     for x in range(1, width + 1):
+    #         for y in range(1, height  + 1):
+    #             all_pos.append(logic.PropSymbolExpr(pacman_str, x, y, t))
+    #     one_pose = exactlyOne(all_pos)
+
+    #     actions = []
+    #     for tt in range(t + 1):
+    #         for action in possible_actions:
+    #             actions.append(logic.PropSymbolExpr(action, tt))
+    #     one_action = exactlyOne(actions)
+    #     print(actions)
+
+    #     state_successors_list = []
+    #     for x in range(1, width + 1):
+    #         for y in range(1, height  + 1):
+    #             state_successors_list.append(pacmanSuccessorStateAxioms(x, y, t, walls))
+    #     state_successors = logic.associate('&',state_successors_list)
+
+    #     to_model = logic.conjoin(goal_pose, initial_pose, one_pose, one_action, state_successors)
+    #     mdl = findModel(to_model)
+
+    #     # print("GOAL POSE")
+    #     # print(goal_pose)
+    #     # print("\nINITIAL POSE")
+    #     # print(initial_pose)
+    #     # print("\nONE POSE")
+    #     # print(one_pose)
+    #     # print("\ONE ACTION")
+    #     # print(one_action)
+    #     # print("\nSTATE SUCCESSORS")
+    #     # print(state_successors)
+
+    #     if mdl:
+    #         print(mdl)
+    #         action_seq = extractActionSequence(mdl, possible_actions)
+    #         return action_seq
+
+    return []
 
 
 def foodLogicPlan(problem):
@@ -285,7 +386,7 @@ def foodLogicPlan(problem):
     walls = problem.walls
     width, height = problem.getWidth(), problem.getHeight()
     (x0, y0), food_locations = problem.getStartState()
-    food_list = food_locations.asList()    
+    food_list = food_locations.asList()
     walls_list = walls.asList()
 
 
@@ -299,4 +400,4 @@ flp = foodLogicPlan
 
 # Sometimes the logic module uses pretty deep recursion on long expressions
 sys.setrecursionlimit(100000)
-    
+
