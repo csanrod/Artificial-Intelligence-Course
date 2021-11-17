@@ -301,7 +301,10 @@ def positionLogicPlan(problem):
             for tt in range (1, t + 1):
                 for x in range(1, width + 1):
                     for y in range(1, height  + 1):
-                        state_successors_list.append(pacmanSuccessorStateAxioms(x, y, tt, walls))
+                        if (x,y) not in walls_list:
+                            state_successors_list.append(pacmanSuccessorStateAxioms(x, y, tt, walls))
+
+            print(state_successors_list)
  
             # One action for t-1            
             for action in possible_actions:
