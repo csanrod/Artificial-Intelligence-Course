@@ -74,10 +74,12 @@ def sentence1():
     (not A) or (not B) or C
     """
     "*** YOUR CODE HERE ***"
+    # Init Expr
     A = logic.Expr('A')
     B = logic.Expr('B')
     C = logic.Expr('C')
 
+    # Definition of sentences
     s1 = A | B
     s2 = ~ A % (~ B | C)
     s3 = logic.disjoin(~ A, ~ B, C)
@@ -94,11 +96,13 @@ def sentence2():
     (not D) implies C
     """
     "*** YOUR CODE HERE ***"
+    # Init Expr
     A = logic.Expr('A')
     B = logic.Expr('B')
     C = logic.Expr('C')
     D = logic.Expr('D')
 
+    # Definition of sentences
     s1 = C % (B | D)
     s2 = A >> (~ B & ~ D)
     s3 = ~(B & ~ C) >> A
@@ -119,11 +123,13 @@ def sentence3():
     The Wumpus is born at time 0.
     """
     "*** YOUR CODE HERE ***"
+    # Init Expr
     WA1 = logic.PropSymbolExpr('WumpusAlive',1)
     WA0 = logic.PropSymbolExpr('WumpusAlive',0)
     WB0 = logic.PropSymbolExpr('WumpusBorn',0)
     WK0 = logic.PropSymbolExpr('WumpusKilled',0)
 
+    # Definition of sentences
     s1 = WA1 % ((WA0 & ~ WK0) | (~ WA0 & WB0))
     s2 = ~ (WA0 & WB0)
     s3 = WB0
@@ -150,6 +156,7 @@ def findModel(sentence):
     model if one exists. Otherwise, returns False.
     """
     "*** YOUR CODE HERE ***"
+    # We pass our sentence converted into CNF form
     return logic.pycoSAT(logic.to_cnf(sentence))
 
 def atLeastOne(literals):
@@ -172,6 +179,7 @@ def atLeastOne(literals):
     True
     """
     "*** YOUR CODE HERE ***"
+    # Equivalent to logical OR
     return logic.associate('|',literals)
 
 
@@ -183,6 +191,7 @@ def atMostOne(literals) :
     the expressions in the list is true.
     """
     "*** YOUR CODE HERE ***"
+    # For every pair of literals combined
     sentences = []
     for i in range(0, len(literals) - 1):
         for j in range(i + 1, len(literals)):
@@ -198,6 +207,7 @@ def exactlyOne(literals):
     the expressions in the list is true.
     """
     "*** YOUR CODE HERE ***"
+    # Joining the last 2 functions we get exactlyOne sentence
     return (atLeastOne(literals) & atMostOne(literals))
 
 
@@ -214,9 +224,17 @@ def extractActionSequence(model, actions):
     ['West', 'South', 'North']
     """
     "*** YOUR CODE HERE ***"
-    # Action keys extraction
+
+    # Algorithm
+    ## First we extract the Expr that are True.
+    ## Then we filter by actions only.
+    ## Finally we store in a priority queue to sort every action, using t.
+
+    
     plan = []
     priority_q = util.PriorityQueue()
+
+    # Keys extraction
     for expr_key in model:
         # Only true expr
         if model[expr_key]:
@@ -225,7 +243,8 @@ def extractActionSequence(model, actions):
             if id in actions:
                 priority = int(logic.parseExpr(expr_key)[1])
                 priority_q.push(id, priority)
-                
+
+    # Action extraction          
     while not priority_q.isEmpty():
         plan.append(priority_q.pop())
 
@@ -237,7 +256,13 @@ def pacmanSuccessorStateAxioms(x, y, t, walls_grid):
     grid representing the wall locations).
     Current <==> (previous position at time t-1) & (took action to move to x, y)
     """
-    "*** YOUR CODE H[ERE ***"
+    "*** YOUR CODE HERE ***"
+
+    # Algorithm
+    ## First we define our current position.
+    ## Then we analize our possible previous positions, taking into account walls.
+    ## Finally we build the axiom.
+
     current_P = logic.PropSymbolExpr(pacman_str, x, y, t)
     prev_Ps = []
 
@@ -266,11 +291,19 @@ def positionLogicPlan(problem):
     xg, yg = problem.getGoalState()
 
     "*** YOUR CODE HERE ***"
+
+    # To solve this, we need 4 elements:
+    ## - Initial position
+    ## - Goal position
+    ## - Successors (Axiom)
+    ## - Actions (only one)
+
     T_LIMIT = 50
     t = 0
     possible_actions = ['North', 'East', 'South', 'West']
 
     # Initial pose
+    ## It's in x0, y0 and not in the rest at time 0
     poses = []
     for x in range(1, width + 1):
         for y in range(1, height  + 1):
@@ -280,19 +313,13 @@ def positionLogicPlan(problem):
                 poses.append(~logic.PropSymbolExpr(pacman_str, x, y, 0))
     initial_pose = logic.associate('&', poses)
 
-    one_action_list = [] # Storage one-action sentences to conjoin later
+    one_action_list = [] # Store one-action sentences to conjoin later
     for t in range(1, T_LIMIT + 1):
         # Goal pose
-        poses = []
-        for x in range(1, width + 1):
-            for y in range(1, height  + 1):
-                if (xg, yg) == (x, y):
-                    poses.append(logic.PropSymbolExpr(pacman_str, x, y, t))
-                else:
-                    poses.append(~logic.PropSymbolExpr(pacman_str, x, y, t))
-        goal_pose = logic.associate('&', poses)
+        # We don't need to add more information, because it's capsuled.
+        goal_pose = logic.PropSymbolExpr(pacman_str, xg, yg, t)
 
-        # General
+        # General case
         if t > 0:
             state_successors_list = []
             actions_list = []
@@ -303,8 +330,6 @@ def positionLogicPlan(problem):
                     for y in range(1, height  + 1):
                         if (x,y) not in walls_list:
                             state_successors_list.append(pacmanSuccessorStateAxioms(x, y, tt, walls))
-
-            print(state_successors_list)
  
             # One action for t-1            
             for action in possible_actions:
@@ -320,7 +345,7 @@ def positionLogicPlan(problem):
             # Model
             mdl = findModel(logic.conjoin(initial_pose, goal_pose, one_action, state_successors))
         else:
-            # If t = 0
+            # Particular case, if our goal is in the initial position (t = 0)
             ## Pacman don't move, because it's initial pose is it's goal pose
             mdl = findModel(logic.conjoin(initial_pose, goal_pose))
         
@@ -347,7 +372,78 @@ def foodLogicPlan(problem):
 
 
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    # To solve this, we need 4 elements:
+    ## - Initial position
+    ## - Goals positions (taking into account every elapsed time)
+    ## - Successors (Axiom)
+    ## - Actions (only one)
+
+    T_LIMIT = 50
+    t = 0
+    possible_actions = ['North', 'East', 'South', 'West']
+
+    # Initial pose
+    ## It's in x0, y0 and not in the rest at time 0
+    poses = []
+    for x in range(1, width + 1):
+        for y in range(1, height  + 1):
+            if (x0, y0) == (x, y):
+                poses.append(logic.PropSymbolExpr(pacman_str, x, y, 0))
+            else:
+                poses.append(~logic.PropSymbolExpr(pacman_str, x, y, 0))
+    initial_pose = logic.associate('&', poses)
+
+    one_action_list = [] # Store one-action sentences to conjoin later
+    for t in range(1, T_LIMIT + 1):
+        # Goal poses
+        ## In this case, it's mandatory to define the food for every t, until all
+        ## goals are reached, otherwise you loose information.
+        food_list = []
+        for food in food_locations.asList():
+            poses = []
+            for tt in range(t):
+                poses.append(logic.PropSymbolExpr(pacman_str, food[0], food[1], tt))
+            poses = logic.disjoin(poses)
+            food_list.append(poses)
+        goal_pose = logic.associate('&', food_list) # In this case stores every possible goal.
+
+        # General
+        if t > 0:
+            state_successors_list = []
+            actions_list = []
+
+            # Successors for each t between 1 to t for every position
+            for tt in range (1, t + 1):
+                for x in range(1, width + 1):
+                    for y in range(1, height  + 1):
+                        if (x,y) not in walls_list:
+                            state_successors_list.append(pacmanSuccessorStateAxioms(x, y, tt, walls))
+ 
+            # One action for t-1            
+            for action in possible_actions:
+                actions_list.append(logic.PropSymbolExpr(action, t - 1))
+            one_action_list.append(exactlyOne(actions_list))
+
+            # Sentences
+            ## One action for every t
+            one_action = logic.associate('&', one_action_list)   
+            ## All posible successors for t
+            state_successors = logic.associate('&',state_successors_list)
+
+            # Model
+            mdl = findModel(logic.conjoin(initial_pose, goal_pose, one_action, state_successors))
+        else:
+            # Particular case, if our goal is in the initial position (t = 0)
+            ## Pacman don't move, because it's initial pose is it's goal pose
+            mdl = findModel(logic.conjoin(initial_pose, goal_pose))
+        
+        # Sequence extraction
+        if mdl:
+            action_seq = extractActionSequence(mdl, possible_actions)
+            # print(action_seq) # Debug print
+            return action_seq
+    return None
 
 # Abbreviations
 plp = positionLogicPlan
@@ -356,4 +452,3 @@ flp = foodLogicPlan
 
 # Sometimes the logic module uses pretty deep recursion on long expressions
 sys.setrecursionlimit(100000)
-
