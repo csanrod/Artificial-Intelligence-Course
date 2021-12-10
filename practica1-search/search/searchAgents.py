@@ -195,7 +195,21 @@ class PositionSearchProblem(search.SearchProblem):
         children = []
         for action in self.getActions(state):
             nextState = self.getNextState(state, action)
-            cost = self.getActionCost(state, action, nextState)
+
+            """
+            Modificación 2.
+
+            En la expansión, que es donde se decide el coste de la siguiente acción,
+            es donde se aplica la condición especificada en el enunciado.
+
+            Para debugear, hay un print comentado en la implementación de A*, donde
+            se aprecia el efecto del nuevo coste.
+            """
+            if action == 'South':
+                cost = 0
+            else:
+                cost = 2 * self.getActionCost(state, action, nextState)
+
             children.append( ( nextState, action, cost) )
 
         # Bookkeeping for display purposes

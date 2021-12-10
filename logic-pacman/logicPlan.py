@@ -445,6 +445,41 @@ def foodLogicPlan(problem):
             return action_seq
     return None
 
+
+'''
+Modifications
+'''
+def sentence4():
+    "*** MODIFICATION 1 ***"
+    # Init Expr
+    A110 = logic.PropSymbolExpr('Agente',1,1,0)
+    A211 = logic.PropSymbolExpr('Agente',2,1,1)
+    N0 = logic.PropSymbolExpr('Norte',0)
+    E0 = logic.PropSymbolExpr('Este',0)
+
+    # Definition of sentences
+    s1 = A211 % logic.conjoin(A110, E0, ~N0)
+    s2 = A211
+    s3 = A110 >> (N0 | E0)
+
+    return logic.conjoin(s1, s2, s3)
+
+
+def allTrue(literals):
+    "*** MODIFICATION 2.a ***"
+    # Equivalent to logical AND
+    return logic.associate('&',literals)
+
+
+def noOne(literals):
+    "*** MODIFICATION 2.b ***"
+    # Equivalent to logical AND with denied literals
+    denied_literals = []
+    for expr in literals:
+        denied_literals.append(~expr)
+    return logic.associate('&',denied_literals)
+
+
 # Abbreviations
 plp = positionLogicPlan
 flp = foodLogicPlan

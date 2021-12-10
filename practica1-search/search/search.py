@@ -104,6 +104,9 @@ def depthFirstSearch(problem):
     frontier.push((problem.getStartState(),0,[])) # ((x,y), acc_cost, path_to_xy)
     expanded = []
 
+    MAX_EXPANDED = 300
+    n_expanded_nodes = 0
+
     while frontier is not frontier.isEmpty():   
         current_node = frontier.pop()  
 
@@ -114,15 +117,28 @@ def depthFirstSearch(problem):
             expanded.append(current_node[0])   
             
             for child in problem.expand(current_node[0]):
+                n_expanded_nodes += 1
                 cost = current_node[1] + child[2]   # acc_cost
                 current_path = []
 
                 # Init current path
                 for item in current_node[2]:
                     current_path.append(item)  
+                current_path.append(child[1]) 
 
-                # Add expanded child action to current path and all data to frontier
-                current_path.append(child[1])           
+                """
+                Modificación 1.
+
+                En laberintos de mayor dimensión, se requieren más expansiones,
+                por tanto si MAX_EXPANDED no es suficiente, nunca acaba el laberinto.
+
+                A veces retrocede porque, el último movimiento se corresponde con la
+                última expansión hecha, que depende del todas las acciones posibles.
+                """
+                if n_expanded_nodes >= MAX_EXPANDED:
+                    return current_path
+
+                # Add expanded child action to current path and all data to frontier          
                 new_frontier = (child[0],cost,current_path)
                 frontier.push(new_frontier)
 
@@ -134,6 +150,10 @@ def breadthFirstSearch(problem):
     frontier.push((problem.getStartState(),0,[]))   # ((x,y), acc_cost, path_to_xy)
     expanded = []
 
+    MAX_EXPANDED = 300
+    n_expanded_nodes = 0
+
+
     while frontier is not frontier.isEmpty():   
         current_node = frontier.pop()  
         
@@ -144,17 +164,30 @@ def breadthFirstSearch(problem):
             expanded.append(current_node[0])   
             
             for child in problem.expand(current_node[0]):
+                n_expanded_nodes += 1
                 cost = current_node[1] + child[2]   # acc_cost
                 current_path = []
 
                 # Init current path
                 for item in current_node[2]:
                     current_path.append(item)  
-                
-                # Add expanded child action to current path and all data to frontier
-                current_path.append(child[1])           
+                current_path.append(child[1]) 
+
+                """
+                Modificación 1.
+
+                En laberintos de mayor dimensión, se requieren más expansiones,
+                por tanto si MAX_EXPANDED no es suficiente, nunca acaba el laberinto.
+
+                A veces retrocede porque, el último movimiento se corresponde con la
+                última expansión hecha, que depende del todas las acciones posibles.
+                """
+                if n_expanded_nodes >= MAX_EXPANDED:
+                    return current_path
+
+                # Add expanded child action to current path and all data to frontier                          
                 new_frontier = (child[0],cost,current_path)
-                frontier.push(new_frontier)
+                frontier.push(new_frontier)                
 
     return -1
 
@@ -176,6 +209,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     while frontier is not frontier.isEmpty():   
         current_node = frontier.pop()
+        # print(current_node) # para DEBUG
 
         if problem.isGoalState(current_node[0]):
             return current_node[2]
