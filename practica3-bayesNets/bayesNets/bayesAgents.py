@@ -91,14 +91,29 @@ def constructBayesNet(gameState):
       of possible assignments to `var`. These should again be set using the
       constants defined at the top of this file.
     """
-
+    
     obsVars = []
-    edges = []
-    variableDomainsDict = {}
+    for housePos in gameState.getPossibleHouses():
+        for obsPos in gameState.getHouseWalls(housePos):
+            obsVar = OBS_VAR_TEMPLATE % obsPos
+            obsVars.append(obsVar)
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    edges = []
+    for house in HOUSE_VARS:
+        # edges.append(X_POS_VAR,house)
+        # edges.append(Y_POS_VAR,house)
+        for obs in obsVars:
+            edges.append((house,obs))
+    
+    variableDomainsDict = {}
+    
+    # variableDomainsDict[X_POS_VAR] = X_POS_VALS
+    # variableDomainsDict[Y_POS_VAR] = Y_POS_VALS
+    # variableDomainsDict[FOOD_HOUSE_VAR] = HOUSE_VALS
+    # variableDomainsDict[GHOST_HOUSE_VAR] = HOUSE_VALS
+    
+    for key in obsVars:
+        variableDomainsDict[key] = OBS_VALS
 
     variables = [X_POS_VAR, Y_POS_VAR] + HOUSE_VARS + obsVars
     net = bn.constructEmptyBayesNet(variables, edges, variableDomainsDict)
