@@ -25,7 +25,7 @@ import functools
 import util
 
 from hunters import GHOST_COLLISION_REWARD, WON_GAME_REWARD
-from layout import PROB_BOTH_TOP, PROB_BOTH_BOTTOM, PROB_ONLY_LEFT_TOP, \
+from layout import PROB_BOTH_TOP, PROB_BOTH_BOTTOM, PROB_LEFT_TOP, PROB_ONLY_LEFT_TOP, \
     PROB_ONLY_LEFT_BOTTOM, PROB_FOOD_RED, PROB_GHOST_RED
 
 X_POS_VAR = "xPos"
@@ -100,17 +100,17 @@ def constructBayesNet(gameState):
 
     edges = []
     for house in HOUSE_VARS:
-        # edges.append(X_POS_VAR,house)
-        # edges.append(Y_POS_VAR,house)
+        edges.append((X_POS_VAR,house))
+        edges.append((Y_POS_VAR,house))
         for obs in obsVars:
             edges.append((house,obs))
     
     variableDomainsDict = {}
     
-    # variableDomainsDict[X_POS_VAR] = X_POS_VALS
-    # variableDomainsDict[Y_POS_VAR] = Y_POS_VALS
-    # variableDomainsDict[FOOD_HOUSE_VAR] = HOUSE_VALS
-    # variableDomainsDict[GHOST_HOUSE_VAR] = HOUSE_VALS
+    variableDomainsDict[X_POS_VAR] = X_POS_VALS
+    variableDomainsDict[Y_POS_VAR] = Y_POS_VALS
+    variableDomainsDict[FOOD_HOUSE_VAR] = HOUSE_VALS
+    variableDomainsDict[GHOST_HOUSE_VAR] = HOUSE_VALS
     
     for key in obsVars:
         variableDomainsDict[key] = OBS_VALS
@@ -143,9 +143,10 @@ def fillYCPT(bayesNet, gameState):
     """
 
     yFactor = bn.Factor([Y_POS_VAR], [], bayesNet.variableDomainsDict())
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    yFactor.setProbability({Y_POS_VAR: BOTH_TOP_VAL}, PROB_BOTH_TOP)
+    yFactor.setProbability({Y_POS_VAR: BOTH_BOTTOM_VAL}, PROB_BOTH_BOTTOM)
+    yFactor.setProbability({Y_POS_VAR: LEFT_TOP_VAL}, PROB_ONLY_LEFT_TOP)
+    yFactor.setProbability({Y_POS_VAR: LEFT_BOTTOM_VAL}, PROB_ONLY_LEFT_BOTTOM)
     bayesNet.setCPT(Y_POS_VAR, yFactor)
 
 def fillHouseCPT(bayesNet, gameState):
