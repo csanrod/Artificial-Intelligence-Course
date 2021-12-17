@@ -244,7 +244,26 @@ def normalize(factor):
                             "so that total probability will sum to 1\n" + 
                             str(factor))
 
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
-    "*** END YOUR CODE HERE ***"
+    total_prob = 0
+    uncond_set = factor.unconditionedVariables()
+    cond_set = factor.conditionedVariables() 
 
+    for assignment in factor.getAllPossibleAssignmentDicts():
+        total_prob += factor.getProbability(assignment) 
+
+    try:
+        alpha = 1/total_prob
+    except ZeroDivisionError:
+        return None    
+
+    for var in factor.unconditionedVariables():
+        if len(variableDomainsDict[var]) == 1:
+            uncond_set.remove(var)
+            cond_set.add(var)
+
+    result_factor = Factor(uncond_set, cond_set, variableDomainsDict)
+    for assignment in factor.getAllPossibleAssignmentDicts():
+        new_prob = alpha*factor.getProbability(assignment)
+        result_factor.setProbability(assignment, new_prob) 
+
+    return result_factor
