@@ -281,7 +281,7 @@ def getMostLikelyFoodHousePosition(evidence, bayesNet, eliminationOrder):
     query_variables = [FOOD_HOUSE_VAR]
     food_house_factor = inference.inferenceByVariableElimination(bayesNet, query_variables, evidence, eliminationOrder)
 
-    # Iteramos sobre la distribución y nos quedamos con la de mayor probabilidad
+    # Iteramos sobre la distribución y nos quedamos el assignment de mayor probabilidad
     max_prob = 0
     for assignment in food_house_factor.getAllPossibleAssignmentDicts():
         current_prob = food_house_factor.getProbability(assignment)
@@ -390,9 +390,22 @@ class VPIAgent(BayesAgent):
         leftExpectedValue = 0
         rightExpectedValue = 0
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        "*** END YOUR CODE HERE ***"
+        # Inferencia
+        query = [FOOD_HOUSE_VAR, GHOST_HOUSE_VAR]
+        house_factor = inference.inferenceByVariableElimination(self.bayesNet, query, evidence, eliminationOrder)
+
+        # Probabilidad de las casas
+        right_p = 0
+        left_p = 0
+        for assignment in house_factor.getAllPossibleAssignmentDicts():
+            if (assignment[FOOD_HOUSE_VAR] == TOP_LEFT_VAL) and (assignment[GHOST_HOUSE_VAR] == TOP_RIGHT_VAL):
+                left_p += house_factor.getProbability(assignment)
+            elif (assignment[FOOD_HOUSE_VAR] == TOP_RIGHT_VAL) and (assignment[GHOST_HOUSE_VAR] == TOP_LEFT_VAL):
+                right_p += house_factor.getProbability(assignment)
+
+        # Valor asignado para las probabilidades obtenidas
+        rightExpectedValue = right_p*WON_GAME_REWARD + left_p*GHOST_COLLISION_REWARD
+        leftExpectedValue = left_p*WON_GAME_REWARD + right_p*GHOST_COLLISION_REWARD
 
         return leftExpectedValue, rightExpectedValue
 
