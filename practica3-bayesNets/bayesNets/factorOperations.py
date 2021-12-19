@@ -174,8 +174,8 @@ def eliminateWithCallTracking(callTrackingList=None):
         cond_set = factor.conditionedVariables()
         domain = factor.variableDomainsDict()
 
-        if eliminationVariable in cond_set:
-            cond_set.remove(eliminationVariable)
+        # if eliminationVariable in cond_set:
+        #     cond_set.remove(eliminationVariable)
 
         if eliminationVariable in uncond_set:
             uncond_set.remove(eliminationVariable)
