@@ -470,9 +470,9 @@ class VPIAgent(BayesAgent):
 
         expectedValue = 0
 
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
-        "*** END YOUR CODE HERE ***"
+        # Aplicación de la fórmula
+        for p, expl in self.getExplorationProbsAndOutcomes(evidence):
+            expectedValue += p * max(self.computeEnterValues(expl, enterEliminationOrder))
 
         return expectedValue
 
