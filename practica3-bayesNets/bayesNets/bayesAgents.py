@@ -92,19 +92,28 @@ def constructBayesNet(gameState):
       constants defined at the top of this file.
     """
     
+    # Cómo crear BayesNet
+    ##  1) Obtener todas las variables (obsVars, X, Y, Ghost House, Food House)
+    ##  2) Definir los edges (X --> Ghost House, X --> Food House, ...etc)
+    ##  3) Definir el dominio o los valores posibles para cada variable (X = x1,x2) o ('D' = ['wet','dry'])
+    ##  4) Agrupar todas las variables y crear la red bayesiana.
+
+    # Para todas las posiciones de una casa, se obtienen las observaciones de cada pared
     obsVars = []
     for housePos in gameState.getPossibleHouses():
         for obsPos in gameState.getHouseWalls(housePos):
-            obsVar = OBS_VAR_TEMPLATE % obsPos
+            obsVar = OBS_VAR_TEMPLATE % obsPos      # obs(1,2) = obs(?,?) % (1,2)
             obsVars.append(obsVar)
 
+    # Definición de los bordes
     edges = []
     for house in HOUSE_VARS:
-        edges.append((X_POS_VAR,house))
-        edges.append((Y_POS_VAR,house))
+        edges.append((X_POS_VAR,house))             # X --> Ghost/Food House
+        edges.append((Y_POS_VAR,house))             # Y --> Ghost/Food House
         for obs in obsVars:
-            edges.append((house,obs))
+            edges.append((house,obs))               # Ghost/Food House --> Cada observación
     
+    # Definición del dominio
     variableDomainsDict = {}
     
     variableDomainsDict[X_POS_VAR] = X_POS_VALS
@@ -115,7 +124,10 @@ def constructBayesNet(gameState):
     for key in obsVars:
         variableDomainsDict[key] = OBS_VALS
 
+    # Agrupación de todas las variables de la BayesNet
     variables = [X_POS_VAR, Y_POS_VAR] + HOUSE_VARS + obsVars
+
+    # Creación de la BayesNet
     net = bn.constructEmptyBayesNet(variables, edges, variableDomainsDict)
     return net, obsVars
 
@@ -142,6 +154,11 @@ def fillYCPT(bayesNet, gameState):
     probabilities down by hand.
     """
 
+    # Creación de las CPTs, en este caso para la variable Y
+    ##  1) Factor, contiene variables incondicionadas, condicionadas y dominio
+    ##  2) Asignación de probabilidades, para cada assignment, o {VARIABLE : valor concreto de la variable}
+    ##  3) Asignar CPT a la red bayesiana
+     
     yFactor = bn.Factor([Y_POS_VAR], [], bayesNet.variableDomainsDict())
     yFactor.setProbability({Y_POS_VAR: BOTH_TOP_VAL}, PROB_BOTH_TOP)
     yFactor.setProbability({Y_POS_VAR: BOTH_BOTTOM_VAL}, PROB_BOTH_BOTTOM)
@@ -277,8 +294,10 @@ def getMostLikelyFoodHousePosition(evidence, bayesNet, eliminationOrder):
     (This should be a very short method.)
     """
     
-    # Queremos consultar variable food house
+    # Queremos consultar variable food house (posicion más probable)
     query_variables = [FOOD_HOUSE_VAR]
+
+    # Aplicamos inferencia
     food_house_factor = inference.inferenceByVariableElimination(bayesNet, query_variables, evidence, eliminationOrder)
 
     # Iteramos sobre la distribución y nos quedamos el assignment de mayor probabilidad
@@ -288,7 +307,7 @@ def getMostLikelyFoodHousePosition(evidence, bayesNet, eliminationOrder):
         if current_prob > max_prob:
             max_prob = current_prob
             result_assignment = assignment
-
+    
     return result_assignment
 
 
@@ -386,7 +405,8 @@ class VPIAgent(BayesAgent):
         *Do not* take into account the "time elapsed" cost of traveling to each
         of the houses---this is calculated elsewhere in the code.
         """
-
+        
+        # Valor de la recompensa/penalización
         leftExpectedValue = 0
         rightExpectedValue = 0
 
@@ -395,15 +415,15 @@ class VPIAgent(BayesAgent):
         house_factor = inference.inferenceByVariableElimination(self.bayesNet, query, evidence, eliminationOrder)
 
         # Probabilidad de las casas
-        right_p = 0
-        left_p = 0
+        right_p = 0     # Probabilidad de que la casa de la comida este en TOP_RIGHT_VAL
+        left_p = 0      # Probabilidad de que la casa de la comida este en TOP_LEFT_VAL
         for assignment in house_factor.getAllPossibleAssignmentDicts():
             if (assignment[FOOD_HOUSE_VAR] == TOP_LEFT_VAL) and (assignment[GHOST_HOUSE_VAR] == TOP_RIGHT_VAL):
                 left_p += house_factor.getProbability(assignment)
             elif (assignment[FOOD_HOUSE_VAR] == TOP_RIGHT_VAL) and (assignment[GHOST_HOUSE_VAR] == TOP_LEFT_VAL):
                 right_p += house_factor.getProbability(assignment)
 
-        # Valor asignado para las probabilidades obtenidas
+        # Asignación de recompensa/penalización en función de las probabilidades obtenidas
         rightExpectedValue = right_p*WON_GAME_REWARD + left_p*GHOST_COLLISION_REWARD
         leftExpectedValue = left_p*WON_GAME_REWARD + right_p*GHOST_COLLISION_REWARD
 
@@ -468,6 +488,7 @@ class VPIAgent(BayesAgent):
         determine the expected value of acting with this extra evidence.
         """
 
+        # Valor de exploración
         expectedValue = 0
 
         # Aplicación de la fórmula

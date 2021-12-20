@@ -100,25 +100,31 @@ def joinFactors(factors):
                     "Input factors: \n" +
                     "\n".join(map(str, factors)))
 
-    factors_list = list(factors)    
+    factors_list = list(factors)                        # Lista de factores para iterar y operar mejor
+
+    # Componentes para crear un factor
     uncond_set = set()
     cond_set = set()
-    domain = factors_list[0].variableDomainsDict()
+    domain = factors_list[0].variableDomainsDict()      # El dominio es el mismo
 
+    # Obtención de los sets definidos
     for factor in factors_list:
         uncond_set = factor.unconditionedVariables().union(uncond_set)
         cond_set = factor.conditionedVariables().union(cond_set)
 
+    # Si la variable se encuentra en ambos sets --> se elimina del set condicionado.
     for item in uncond_set.intersection(cond_set):
         cond_set.remove(item)
 
+    # Factor a retornar
     result_factor = Factor(uncond_set, cond_set, domain)
 
-    assignment_list = result_factor.getAllPossibleAssignmentDicts()
+    # Asignación de probabilidades
+    assignment_list = result_factor.getAllPossibleAssignmentDicts()     # Cada entrada de la CPT del factor final
     for assignment in assignment_list:
         current_p = 1
-        for factor in factors_list:
-            current_p *= factor.getProbability(assignment)
+        for factor in factors_list:            
+            current_p *= factor.getProbability(assignment)              # P(D,W) = P(D|W) * P(W) --> factores simples admiten assignments complejos
         result_factor.setProbability(assignment, current_p)
 
     return result_factor    
@@ -170,23 +176,24 @@ def eliminateWithCallTracking(callTrackingList=None):
                     "eliminationVariable:" + str(eliminationVariable) + "\n" +\
                     "unconditionedVariables: " + str(factor.unconditionedVariables()))
 
+        # Componentes para crear un factor
         uncond_set = factor.unconditionedVariables()
         cond_set = factor.conditionedVariables()
         domain = factor.variableDomainsDict()
 
-        # if eliminationVariable in cond_set:
-        #     cond_set.remove(eliminationVariable)
-
+        # Operaciones sobre los sets, en este caso la eliminación de una variable incondicionada
         if eliminationVariable in uncond_set:
             uncond_set.remove(eliminationVariable)
 
+        # Creación del factor a retornar
         result_factor = Factor(uncond_set, cond_set, domain)
-        eliminated_factor = Factor(eliminationVariable, set(), domain)
+        eliminated_factor = Factor(eliminationVariable, set(), domain)  # Para poder generar assignments válidos para la tabla del factor sin eliminar
 
+        # Asignación de probabilidades (se da la vuelta)
         for result_assignment in result_factor.getAllPossibleAssignmentDicts():
             current_p = 0            
             for elim_assignment in eliminated_factor.getAllPossibleAssignmentDicts():
-                current_assignment = {**result_assignment, **elim_assignment}
+                current_assignment = {**result_assignment, **elim_assignment}   # Entrada a la CPT sin eliminar
                 current_p += factor.getProbability(current_assignment)                       
             result_factor.setProbability(result_assignment, current_p)
 
@@ -244,26 +251,34 @@ def normalize(factor):
                             "so that total probability will sum to 1\n" + 
                             str(factor))
 
+    # Variable que acumula la suma de probabilidades sin normalizar
     total_prob = 0
+
+    # Componentes para crear un factor
     uncond_set = factor.unconditionedVariables()
     cond_set = factor.conditionedVariables() 
 
     for assignment in factor.getAllPossibleAssignmentDicts():
         total_prob += factor.getProbability(assignment) 
 
+    # Cálculo del factor alpha de normalización
     try:
         alpha = 1/total_prob
     except ZeroDivisionError:
         return None    
 
+    # CASO ESPECÍFICO: Si el dominio de una variable incondicionada tiene EXACTAMENTE UNA entrada.
     for var in factor.unconditionedVariables():
         if len(variableDomainsDict[var]) == 1:
             uncond_set.remove(var)
             cond_set.add(var)
 
+    # Creación del factor a retornar
     result_factor = Factor(uncond_set, cond_set, variableDomainsDict)
+
+    # Asignación de probabilidades
     for assignment in factor.getAllPossibleAssignmentDicts():
-        new_prob = alpha*factor.getProbability(assignment)
+        new_prob = alpha*factor.getProbability(assignment)      # normalized_P = alpha*unormalized_P
         result_factor.setProbability(assignment, new_prob) 
 
     return result_factor

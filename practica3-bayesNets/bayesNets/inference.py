@@ -129,7 +129,7 @@ def inferenceByVariableEliminationWithCallTracking(callTrackingList=None):
                                    set(evidenceDict.keys())
             eliminationOrder = sorted(list(eliminationVariables))
 
-        # Lista de factores teniendo en cuenta --> assignment = evidencias conocidas
+        # Lista de factores que se ajustan al --> assignment = evidencias conocidas (diccionario de VARIABLE: valor de la variable)
         currentFactorsList = bayesNet.getAllCPTsWithEvidence(evidenceDict)
 
         # Iteramos para cada una de las variables de eliminación     
