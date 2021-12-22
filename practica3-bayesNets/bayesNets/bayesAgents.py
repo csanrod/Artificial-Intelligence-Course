@@ -112,7 +112,7 @@ def constructBayesNet(gameState):
         edges.append((Y_POS_VAR,house))             # Y --> Ghost/Food House
         for obs in obsVars:
             edges.append((house,obs))               # Ghost/Food House --> Cada observación
-    
+
     # Definición del dominio
     variableDomainsDict = {}
     
@@ -595,3 +595,114 @@ def combinations(n, r):
     denom = functools.reduce(op.mul, range(1, r+1))
     return numer / denom
 
+'''
+Modifications
+'''
+DIFFICULTY_VAR = "difficulty"
+EASY = "easy" #d0
+HARD = "hard" #d1
+DIFFICULTY_VALS = [EASY, HARD]
+
+INTELLIGENCE_VAR = "intelligence"
+NOT_SMART = "not_smart" #i0
+SMART = "smart" #i1
+INTELLIGENCE_VALS = [NOT_SMART, SMART]
+
+GRADE_VAR = "grade"
+EXCELLENT = "excellent" #g1
+GOOD = "good" #g2
+AVERAGE = "average" #g3
+GRADE_VALS = [EXCELLENT, GOOD, AVERAGE]
+
+SAT_VAR = "sat"
+LOW_SCORE = "low_score" #s0
+HIGH_SCORE = "high_score" #s1
+SAT_VALS = [LOW_SCORE, HIGH_SCORE]
+
+LETTER_VAR = "letter"
+WEAK_RECOMM_LETTER = "weak_recomm_letter" #l0
+STRONG_RECOMM_LETTER = "strong_recomm_letter" #l1
+LETTER_VALS = [WEAK_RECOMM_LETTER, STRONG_RECOMM_LETTER]
+
+def constructStudentBayesNet():
+    #pass
+    "*** MODIFICATION ***"
+    # Definición de nodos
+    vars = [DIFFICULTY_VAR, INTELLIGENCE_VAR, GRADE_VAR, SAT_VAR, LETTER_VAR]
+    
+    # Definición de los bordes
+    edges = [(DIFFICULTY_VAR, GRADE_VAR), (INTELLIGENCE_VAR, GRADE_VAR), (INTELLIGENCE_VAR, SAT_VAR), (GRADE_VAR, LETTER_VAR)]
+
+    # Definición del dominio
+    variableDomainsDict = {}
+    
+    variableDomainsDict[DIFFICULTY_VAR] = DIFFICULTY_VALS
+    variableDomainsDict[INTELLIGENCE_VAR] = INTELLIGENCE_VALS
+    variableDomainsDict[GRADE_VAR] = GRADE_VALS
+    variableDomainsDict[SAT_VAR] = SAT_VALS
+    variableDomainsDict[LETTER_VAR] = LETTER_VALS
+
+    # Creación de la BayesNet
+    net = bn.constructEmptyBayesNet(vars, edges, variableDomainsDict)
+
+    # CPTs
+    ## Difficulty
+    difficultyFactor = bn.Factor([DIFFICULTY_VAR], [], net.variableDomainsDict())
+    difficultyFactor.setProbability({DIFFICULTY_VAR: EASY}, 0.6)
+    difficultyFactor.setProbability({DIFFICULTY_VAR: HARD}, 0.4)
+    net.setCPT(DIFFICULTY_VAR, difficultyFactor)
+
+    ## Intelligence
+    intelligenceFactor = bn.Factor([INTELLIGENCE_VAR], [], net.variableDomainsDict())
+    intelligenceFactor.setProbability({INTELLIGENCE_VAR: NOT_SMART}, 0.7)
+    intelligenceFactor.setProbability({INTELLIGENCE_VAR: SMART}, 0.3)
+    net.setCPT(INTELLIGENCE_VAR, intelligenceFactor)
+
+    ## SAT
+    satFactor = bn.Factor([SAT_VAR], [INTELLIGENCE_VAR], net.variableDomainsDict())
+    satFactor.setProbability({SAT_VAR: LOW_SCORE, INTELLIGENCE_VAR: NOT_SMART}, 0.95)
+    satFactor.setProbability({SAT_VAR: LOW_SCORE, INTELLIGENCE_VAR: SMART}, 0.2)
+    satFactor.setProbability({SAT_VAR: HIGH_SCORE, INTELLIGENCE_VAR: NOT_SMART}, 0.05)
+    satFactor.setProbability({SAT_VAR: HIGH_SCORE, INTELLIGENCE_VAR: SMART}, 0.8)
+    net.setCPT(SAT_VAR, satFactor)
+
+    ## Grade
+    gradeFactor = bn.Factor([GRADE_VAR], [INTELLIGENCE_VAR, DIFFICULTY_VAR], net.variableDomainsDict())
+    gradeFactor.setProbability({GRADE_VAR: EXCELLENT, INTELLIGENCE_VAR: NOT_SMART,  DIFFICULTY_VAR: EASY}, 0.3)
+    gradeFactor.setProbability({GRADE_VAR: EXCELLENT, INTELLIGENCE_VAR: NOT_SMART,  DIFFICULTY_VAR: HARD}, 0.05)
+    gradeFactor.setProbability({GRADE_VAR: EXCELLENT, INTELLIGENCE_VAR: SMART,  DIFFICULTY_VAR: EASY}, 0.9)
+    gradeFactor.setProbability({GRADE_VAR: EXCELLENT, INTELLIGENCE_VAR: SMART,  DIFFICULTY_VAR: HARD}, 0.5)
+
+    gradeFactor.setProbability({GRADE_VAR: GOOD, INTELLIGENCE_VAR: NOT_SMART,  DIFFICULTY_VAR: EASY}, 0.4)
+    gradeFactor.setProbability({GRADE_VAR: GOOD, INTELLIGENCE_VAR: NOT_SMART,  DIFFICULTY_VAR: HARD}, 0.25)
+    gradeFactor.setProbability({GRADE_VAR: GOOD, INTELLIGENCE_VAR: SMART,  DIFFICULTY_VAR: EASY}, 0.08)
+    gradeFactor.setProbability({GRADE_VAR: GOOD, INTELLIGENCE_VAR: SMART,  DIFFICULTY_VAR: HARD}, 0.3)
+
+    gradeFactor.setProbability({GRADE_VAR: AVERAGE, INTELLIGENCE_VAR: NOT_SMART,  DIFFICULTY_VAR: EASY}, 0.3)
+    gradeFactor.setProbability({GRADE_VAR: AVERAGE, INTELLIGENCE_VAR: NOT_SMART,  DIFFICULTY_VAR: HARD}, 0.7)
+    gradeFactor.setProbability({GRADE_VAR: AVERAGE, INTELLIGENCE_VAR: SMART,  DIFFICULTY_VAR: EASY}, 0.02)
+    gradeFactor.setProbability({GRADE_VAR: AVERAGE, INTELLIGENCE_VAR: SMART,  DIFFICULTY_VAR: HARD}, 0.2)
+    net.setCPT(GRADE_VAR, gradeFactor)
+
+    ## Letter
+    letterFactor = bn.Factor([LETTER_VAR], [GRADE_VAR], net.variableDomainsDict())
+    letterFactor.setProbability({LETTER_VAR: WEAK_RECOMM_LETTER, GRADE_VAR: EXCELLENT}, 0.1)
+    letterFactor.setProbability({LETTER_VAR: WEAK_RECOMM_LETTER, GRADE_VAR: GOOD}, 0.4)
+    letterFactor.setProbability({LETTER_VAR: WEAK_RECOMM_LETTER, GRADE_VAR: AVERAGE}, 0.99)
+
+    letterFactor.setProbability({LETTER_VAR: STRONG_RECOMM_LETTER, GRADE_VAR: EXCELLENT}, 0.9)
+    letterFactor.setProbability({LETTER_VAR: STRONG_RECOMM_LETTER, GRADE_VAR: GOOD}, 0.6)
+    letterFactor.setProbability({LETTER_VAR: STRONG_RECOMM_LETTER, GRADE_VAR: AVERAGE}, 0.01)
+    net.setCPT(LETTER_VAR, letterFactor)
+
+    return net
+
+def inferenceOnStudentBayesNet(bayes_net):
+    "*** MODIFICATION ***" 
+    query = [LETTER_VAR]
+    evidence = {INTELLIGENCE_VAR: NOT_SMART, DIFFICULTY_VAR: EASY}
+
+    return inference.inferenceByEnumeration(bayes_net, query, evidence)
+
+bayes_net = constructStudentBayesNet()
+print(inferenceOnStudentBayesNet(bayes_net))
